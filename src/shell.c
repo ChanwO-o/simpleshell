@@ -91,10 +91,15 @@ int main(int argc, char *argv[])
 		
 		if (strcmp(args[0], "cd") == 0) {
 			if (numTokens == 1) // only 'cd': go to home dir
-				chdir(getenv("HOME"));
+				if (chdir(getenv("HOME")) == 0) // cd success: print current path
+					printf("%s\n", getcwd(s, 100));
+				else
+					fprintf(stderr, DIR_ERR);
 			else {
-				chdir(args[1]);
-				debug("%s\n", getcwd(s, 100));
+				if (chdir(args[1]) == 0) // cd success: print current path
+					printf("%s\n", getcwd(s, 100));
+				else
+					fprintf(stderr, DIR_ERR);
 			}
 			free(buffer);
 			continue;
