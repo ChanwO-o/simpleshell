@@ -62,7 +62,10 @@ int main(int argc, char *argv[])
 		// Remove newline character from buffer, if it's there
 		if(buffer[nbytes - 1] == '\n')
 			buffer[nbytes- 1] = '\0';
-
+		
+		char s[100];
+		// debug("%s\n", getcwd(s, 100));
+		
 		// Handling empty strings
 		if(strcmp(buffer, "") == 0) {
 			free(buffer);
@@ -79,7 +82,6 @@ int main(int argc, char *argv[])
 			free(buffer);
 			continue;
 		}
-		// debug("numTokens: %d\n", numTokens);
 		
 		if(strcmp(args[0],"exit") == 0) {
 			// Terminating the shell
@@ -87,7 +89,18 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 		
-
+		if (strcmp(args[0], "cd") == 0) {
+			if (numTokens == 1) // only 'cd': go to home dir
+				chdir(getenv("HOME"));
+			else {
+				chdir(args[1]);
+				debug("%s\n", getcwd(s, 100));
+			}
+			free(buffer);
+			continue;
+		}
+		
+		
 		pid = fork();   //In need of error handling......
 
 		if (pid == 0){ //If zero, then it's the child process
