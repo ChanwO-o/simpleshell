@@ -21,7 +21,6 @@
 
 int main(int argc, char *argv[])
 {
-	debug("Program has %d args\n", argc);
 	int i; //loop counter
 	char *args[MAX_TOKENS + 1];
 	int exec_result;
@@ -75,6 +74,13 @@ int main(int argc, char *argv[])
 		*args = NULL;
 		numTokens = tokenizer(buffer, args);
 
+		// handle 0 args (whitespace input)
+		if (numTokens == 0) {
+			free(buffer);
+			continue;
+		}
+		// debug("numTokens: %d\n", numTokens);
+		
 		if(strcmp(args[0],"exit") == 0) {
 			// Terminating the shell
 			free(buffer);
