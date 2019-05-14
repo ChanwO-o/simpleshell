@@ -89,6 +89,14 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 		
+		// handle estatus command
+		if (strcmp(args[0], "estatus") == 0) {
+			printf("%d\n", exit_status);
+			free(buffer);
+			continue;
+		}
+		
+		// handle cd command
 		if (strcmp(args[0], "cd") == 0) {
 			if (numTokens == 1) // only 'cd': go to home dir
 				if (chdir(getenv("HOME")) == 0) // cd success: print current path
@@ -111,17 +119,31 @@ int main(int argc, char *argv[])
 		if (pid == 0){ //If zero, then it's the child process
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
+				debug("aaaaa\n");
 				printf(EXEC_ERR, args[0]);
 				exit(EXIT_FAILURE);
 			}
+			else {
+				debug("bbbbb\n");
+			}
 		    exit(EXIT_SUCCESS);
 		}
-		 else{ // Parent Process
+		else{ // Parent Process
 			wait_result = waitpid(pid, &exit_status, 0);
 			if(wait_result == -1){
+				debug("aaaaa2\n");
 				printf(WAIT_ERR);
 				exit(EXIT_FAILURE);
 			}
+			else {
+				debug("bbbbb2\n");
+			}
+		}
+		
+		// handle exit status
+		if (exit_status != 0) {
+			debug("setting exit_status\n");
+			exit_status = 1;
 		}
 
 		// Free the buffer allocated from getline
