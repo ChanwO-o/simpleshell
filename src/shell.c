@@ -40,7 +40,19 @@ int main(int argc, char *argv[])
 		perror("Failed to set signal handler");
 		exit(-1);
 	}
-
+	// setup Ctrl-C handler
+	if (signal(SIGINT, sigint_handler) == SIG_ERR)
+	{
+		perror("Failed: ctrl-c handling\n");
+		exit(-1);
+	}
+	// setup child termination handler
+	if (signal(SIGCHLD, sigchild_handler) == SIG_ERR)
+	{
+		perror("Failed: sigchld handling\n");
+		exit(-1);
+	}
+			
 	while(1) {
 		// DO NOT MODIFY buffer
 		// The buffer is dynamically allocated, we need to free it at the end of the loop
@@ -113,38 +125,40 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
+		// handle background process
+		if (strcmp(args[numTokens - 1], "&") == 0) {
+			debug("& found\n");
+			
+		}
 		
 		pid = fork();   //In need of error handling......
 
 		if (pid == 0){ //If zero, then it's the child process
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
-				debug("aaaaa\n");
 				printf(EXEC_ERR, args[0]);
 				exit(EXIT_FAILURE);
 			}
 			else {
-				debug("bbbbb\n");
+				
 			}
 		    exit(EXIT_SUCCESS);
 		}
 		else{ // Parent Process
 			wait_result = waitpid(pid, &exit_status, 0);
 			if(wait_result == -1){
-				debug("aaaaa2\n");
 				printf(WAIT_ERR);
 				exit(EXIT_FAILURE);
 			}
 			else {
-				debug("bbbbb2\n");
+				
 			}
 		}
 		
+		
 		// handle exit status
-		if (exit_status != 0) {
-			debug("setting exit_status\n");
+		if (exit_status != 0)
 			exit_status = 1;
-		}
 
 		// Free the buffer allocated from getline
 		free(buffer);
