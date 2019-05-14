@@ -19,6 +19,8 @@
 	#define info(fmt, ...) do{printf("INFO: " fmt, ##__VA_ARGS__);}while(0)
 #endif
 
+int conditional_flag = 0; // flag denoting that there's a terminated child process (1) or none (0)
+
 int main(int argc, char *argv[])
 {
 	int i; //loop counter
@@ -28,6 +30,8 @@ int main(int argc, char *argv[])
 	pid_t pid;
 	pid_t wait_result;
     List_t bg_list;
+	
+	
 
     //Initialize the linked list
     bg_list.head = NULL;
@@ -129,6 +133,8 @@ int main(int argc, char *argv[])
 		if (strcmp(args[numTokens - 1], "&") == 0) {
 			debug("& found\n");
 			
+			
+			// TODO: create process struct and add to linked list
 		}
 		
 		pid = fork();   //In need of error handling......
