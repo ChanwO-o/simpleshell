@@ -73,7 +73,9 @@ int main(int argc, char *argv[])
 		
 		// Read line from STDIN
 		ssize_t nbytes = getline((char **)&buffer, &buf_size, stdin);
-
+		char* fullbuffer; // store full cmd buffer before it gets tokenized
+		strcpy(fullbuffer, buffer);
+		
 		// No more input from STDIN, free buffer and terminate
 		if(nbytes == -1) {
 			free(buffer);
@@ -139,7 +141,8 @@ int main(int argc, char *argv[])
 		
 		// handle background process
 		if (strcmp(args[numTokens - 1], "&") == 0) {
-			addBackProcess(buffer, &bg_list);
+			// debug("***fullbuffer:  %s\n", fullbuffer);
+			addBackProcess(fullbuffer, &bg_list);
 			// pid = fork();
 		}
 		

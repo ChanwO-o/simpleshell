@@ -38,20 +38,26 @@ int processComparator(void *process1, void *process2) {
 		return 0;
 }
 
-void addBackProcess(char* const buffer, List_t* bg_list) {
+void addBackProcess(char* buffer, List_t* bg_list) {
+	// debug("***buffer:  %s\n", buffer);
 	childcount++; // increase child counter
 	debug("New child process; childcount: %d\n", childcount);
 	
 	// create linkedlist node
-	ProcessEntry_t* processentry;
+	struct ProcessEntry* processentry = (struct ProcessEntry*) malloc(sizeof(struct ProcessEntry));
+	// debug("1\n");
 	processentry -> cmd = buffer;
 	processentry -> pid = getpid();
 	processentry -> seconds = time(NULL);
 	
+	debug("cmd: %s\n", processentry -> cmd);
+	debug("pid: %d\n", processentry -> pid);
+	debug("seconds: %d\n", (int) processentry -> seconds);
+	
 	node_t node;
 	node.value = processentry;
 	insertRear(bg_list, &node);
-	printList(bg_list, STR_MODE);
+	// printList(bg_list, INT_MODE);
 }
 
 void sigint_handler() {
