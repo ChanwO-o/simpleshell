@@ -18,7 +18,9 @@
 	#define info(fmt, ...) do{printf("INFO: " fmt, ##__VA_ARGS__);}while(0)
 #endif
 
+extern int errno;
 extern int conditional_flag;
+extern int childcount;
 
 int processComparator(void *process1, void *process2) {
 	ProcessEntry_t* p1 = (ProcessEntry_t*) process1;
@@ -36,17 +38,36 @@ int processComparator(void *process1, void *process2) {
 		return 0;
 }
 
+void addBackProcess(char* const buffer, List_t* bg_list) {
+	childcount++; // increase child counter
+	debug("New child process; childcount: %d\n", childcount);
+	
+	// create linkedlist node
+	ProcessEntry_t* processentry;
+	processentry -> cmd = buffer;
+	processentry -> pid = getpid();
+	processentry -> seconds = time(NULL);
+	
+	node_t node;
+	node.value = processentry;
+	insertRear(bg_list, &node);
+	printList(bg_list, STR_MODE);
+}
 
 void sigint_handler() {
 	debug("ctrl-c pressed\n");
 }
 
 void sigchild_handler() {
-	debug("child process terminated: setting flag to 1\n");
+	debug("child process terminated: reaping child and setting flag to 1\n");
 	conditional_flag = 1;
-	// int olderrno = errno;
 	pid_t pid;
-	if ((pid = wait(NULL)) < 0)
-		debug("wait error\n");
-	debug("pid: %d\n", (int) getpid());
+	// int olderrno = errno;
+	
+	while ((pid = wait(NULL)) > 0) {
+		childcount--;
+		debug("reaped child pid: %d\n", pid);
+	}
+	// debug("reaped child pid: %d\n", (int) getpid());
+	// removeByPid();
 }

@@ -19,7 +19,9 @@
 	#define info(fmt, ...) do{printf("INFO: " fmt, ##__VA_ARGS__);}while(0)
 #endif
 
+int errno = 0;
 int conditional_flag = 0; // flag denoting that there's a terminated child process (1) or none (0)
+int childcount = 0; // number of active child processes alive
 
 int main(int argc, char *argv[])
 {
@@ -30,13 +32,11 @@ int main(int argc, char *argv[])
 	pid_t pid;
 	pid_t wait_result;
     List_t bg_list;
-	
-	
 
     //Initialize the linked list
     bg_list.head = NULL;
     bg_list.length = 0;
-    bg_list.comparator = NULL;  // Don't forget to initialize this to your comparator!!!
+    bg_list.comparator = processComparator;  // Don't forget to initialize this to your comparator!!!
 
 	// Setup segmentation fault handler
 	if(signal(SIGSEGV, sigsegv_handler) == SIG_ERR)
@@ -56,8 +56,13 @@ int main(int argc, char *argv[])
 		perror("Failed: sigchld handling\n");
 		exit(-1);
 	}
-			
+	
 	while(1) {
+		
+		// check if conditional_flag is 1
+		// if 1, iterate through ll and remove terminmated process node
+		
+		
 		// DO NOT MODIFY buffer
 		// The buffer is dynamically allocated, we need to free it at the end of the loop
 		char * const buffer = NULL;
@@ -129,28 +134,27 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
+		// if not a built-in command, fork and run the command on a child process (as to not clog up parent)
+		pid = fork();
+		
 		// handle background process
 		if (strcmp(args[numTokens - 1], "&") == 0) {
-			debug("& found\n");
-			
-			
-			// TODO: create process struct and add to linked list
+			addBackProcess(buffer, &bg_list);
+			// pid = fork();
 		}
 		
-		pid = fork();   //In need of error handling......
-
+		
 		if (pid == 0){ //If zero, then it's the child process
+			debug("child\n");
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
 				printf(EXEC_ERR, args[0]);
 				exit(EXIT_FAILURE);
 			}
-			else {
-				
-			}
 		    exit(EXIT_SUCCESS);
 		}
 		else{ // Parent Process
+			debug("parent\n");
 			wait_result = waitpid(pid, &exit_status, 0);
 			if(wait_result == -1){
 				printf(WAIT_ERR);
@@ -160,7 +164,6 @@ int main(int argc, char *argv[])
 				
 			}
 		}
-		
 		
 		// handle exit status
 		if (exit_status != 0)
