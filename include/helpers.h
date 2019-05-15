@@ -14,7 +14,7 @@ void addBackProcess(char* buffer, List_t* bg_list);
 /*
  * Return ProcessEntry struct with corresponding pid
  */
-ProcessEntry_t getByPid(pid_t pid, List_t* bg_list);
+ProcessEntry_t* getByPid(pid_t pid, List_t* bg_list);
 
 /*
  * Remove terminated processes from linked list

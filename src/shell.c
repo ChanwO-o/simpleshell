@@ -60,15 +60,19 @@ int main(int argc, char *argv[])
 	while(1) {
 		// check if a background child process was terminated. if 1, remove the process node from linkedlist
 		if (conditional_flag == 1) {
-			debug("flag is 1; traverse through ll and remove the terminated child process\n");
+			debug("flag is 1; check if this is background or not\n");
 			
-			// get the ProcessEntry object for this pid
-			ProcessEntry_t processentry = getByPid(getpid(), &bg_list);
-			removeByPid(&bg_list, getpid());
-			printf(BG_TERM, getpid(), processentry.cmd);
+			// get the ProcessEntry object for this pid; if this is foreground, will not be in the ll and return NULL
+			ProcessEntry_t* processentry = getByPid(getpid(), &bg_list);
+			if (processentry != NULL) {
+				debug("process is background; remove from ll\n");
+				removeByPid(&bg_list, getpid());
+				printf(BG_TERM, getpid(), processentry -> cmd);
+			}
+			else
+				debug("process is foreground; ignore\n");
 			
-			// debug("new length of list: %d\n", bg_list.length);
-			// removeTerminatedFromList(&bg_list);
+			debug("new length of list: %d\n", bg_list.length);
 			
 			conditional_flag = 0; // no more zombies left to terminate
 			debug("zombies cleared, flag set back to 0\n");

@@ -68,14 +68,14 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	// debug("first node pid: %d\n", firstpid);
 }
 
-ProcessEntry_t getByPid(pid_t targetpid, List_t* bg_list) {
+ProcessEntry_t* getByPid(pid_t targetpid, List_t* bg_list) {
 	node_t* current = bg_list -> head;
 	while(current != NULL) {
 		ProcessEntry_t* currentPE = (ProcessEntry_t*) current -> value;
 		pid_t currentpid = currentPE -> pid;
 		// debug("current node pid: %d\n", currentPE -> pid);
 		if (currentpid == targetpid)
-			return *currentPE;
+			return currentPE;
 		current = current -> next;
 	}
 }
