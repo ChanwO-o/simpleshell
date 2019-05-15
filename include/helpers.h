@@ -32,6 +32,11 @@ ProcessEntry_t* getByPid(pid_t pid, List_t* bg_list);
 int isBackgroundProcess(pid_t pid, List_t* bg_list);
 
 /*
+ * Kill the pids of every node in the ll & delete all nodes from ll
+ */
+void killAllBackgrounds(List_t* bg_list);
+
+/*
  * Handle ctrl-c thing
  */
 void sigint_handler();

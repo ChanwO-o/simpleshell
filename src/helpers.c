@@ -105,6 +105,17 @@ int isBackgroundProcess(pid_t pid, List_t* bg_list) {
 	
 }
 
+void killAllBackgrounds(List_t* bg_list) {
+	node_t* current = bg_list -> head;
+	while(current != NULL) {
+		ProcessEntry_t* processentry = (ProcessEntry_t*) current -> value;
+		printBGPEntry(processentry);
+		pid_t p = processentry -> pid;
+		kill(p, SIGKILL);
+		current = current -> next;
+	}
+}
+
 void sigint_handler() {
 	debug("ctrl-c pressed\n");
 }

@@ -121,8 +121,9 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
+		// Terminating the shell
 		if(strcmp(args[0],"exit") == 0) {
-			// Terminating the shell
+			killAllBackgrounds(&bg_list);
 			free(buffer);
 			return 0;
 		}
