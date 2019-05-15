@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 		// debug("conditional_flag: %d\n", conditional_flag);
 		// check if conditional_flag is 1. if 1, remove terminated process node from linkedlist
 		if (conditional_flag == 1) {
-			debug("** flag is 1; reap all terminated child processes\n");
+			debug("flag is 1; reap all terminated child processes\n");
 			
 			int status;
 			while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0)
@@ -70,17 +70,12 @@ int main(int argc, char *argv[])
 				if (WIFEXITED(status)) {
 					debug("child terminated normally; now removing child's pid: %d\n", pid);
 					removeByPid(&bg_list, pid);
+					
+					fprintf(stdout, BG_TERM);
 				}
-				// int removed = removeByPid(&bg_list, pid);
-				// if (removed == -1)
-					// debug("error removing pid from ll\n");
-				// else {
-					// debug("removed pid from ll\n");
-					// childcount--;
-				// }
 			}
 			conditional_flag = 0; // no more zombies left to terminate
-			debug("** zombies cleared, flag set back to 0 **\n");
+			debug("zombies cleared, flag set back to 0\n");
 		}
 		
 		// DO NOT MODIFY buffer
