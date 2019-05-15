@@ -58,13 +58,19 @@ int main(int argc, char *argv[])
 	}
 	
 	while(1) {
-		
+		// debug("bloo1\n");
+		debug("conditional_flag: %d\n", conditional_flag);
+		// debug("bloo2\n");
 		// check if conditional_flag is 1. if 1, iterate through ll and remove terminated process node
 		if (conditional_flag == 1) {
-			debug("** flag is 1; waiting for terminated childs.. **\n");
-			// clearZombies(pid, &bg_list);
+			debug("afafaf");
+			debug("** flag is 1; removing process with pid.. **\n");
+			
+			//removeBackProcess(pid, &bg_list);
+			
+			int removed = removeByPid(&bg_list, pid);
 
-			if (removeByPid(bg_list, pid) == -1)
+			if (removeByPid(&bg_list, pid) == -1)
 				debug("error removing pid from ll\n");
 			else
 				debug("removed pid from ll\n");
@@ -83,7 +89,7 @@ int main(int argc, char *argv[])
 		
 		// Read line from STDIN
 		ssize_t nbytes = getline((char **)&buffer, &buf_size, stdin);
-		char* fullbuffer; // store full cmd buffer before it gets tokenized
+		char* fullbuffer = (char*) malloc(50 * sizeof(char)); // store full cmd buffer before it gets tokenized
 		strcpy(fullbuffer, buffer);
 		
 		// No more input from STDIN, free buffer and terminate
@@ -146,7 +152,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
-		
+		debug("test1\n");
 		// if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		pid = fork();
 		

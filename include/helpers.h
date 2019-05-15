@@ -12,9 +12,9 @@ int processComparator(void *process1, void *process2);
 void addBackProcess(char* buffer, List_t* bg_list);
 
 /*
- * Remove all nodes with terminated child processes (zombie processes)
+ * Remove back process with given pid
  */
-void clearZombies(pid_t pid, List_t* bg_list);
+void removeBackProcess(pid_t pid, List_t* bg_list);
 
 /*
  * Handle ctrl-c thing
