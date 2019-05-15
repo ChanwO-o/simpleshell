@@ -50,9 +50,9 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	processentry -> pid = getpid();
 	processentry -> seconds = time(NULL);
 	
-	debug("cmd: %s\n", processentry -> cmd);
-	debug("pid: %d\n", processentry -> pid);
-	debug("seconds: %d\n", (int) processentry -> seconds);
+	// debug("cmd: %s\n", processentry -> cmd);
+	// debug("pid: %d\n", processentry -> pid);
+	// debug("seconds: %d\n", (int) processentry -> seconds);
 	
 	node_t node;
 	node.value = processentry;
@@ -67,13 +67,15 @@ void sigint_handler() {
 void sigchild_handler() {
 	debug("child process terminated: reaping child and setting flag to 1\n");
 	conditional_flag = 1;
-	pid_t pid;
-	// int olderrno = errno;
-	
-	while ((pid = wait(NULL)) > 0) {
-		childcount--;
-		debug("reaped child pid: %d\n", pid);
-	}
+	// pid_t pid;
+	// int status;
+	// pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
+	// debug("pid: %d\n", pid);
+	// while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
+		// debug("pid: %d\n", pid);
+		// childcount--;
+		// debug("reaped child pid: %d\n", pid);
+	// }
 	// debug("reaped child pid: %d\n", (int) getpid());
 	// removeByPid();
 }

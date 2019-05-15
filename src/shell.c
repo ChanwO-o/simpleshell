@@ -136,24 +136,31 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
+		
 		// if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		pid = fork();
-		
-		// handle background process
-		if (strcmp(args[numTokens - 1], "&") == 0) {
-			// debug("***fullbuffer:  %s\n", fullbuffer);
-			addBackProcess(fullbuffer, &bg_list);
-			// pid = fork();
-		}
 		
 		
 		if (pid == 0){ //If zero, then it's the child process
 			debug("child\n");
+			
+			
+			// handle background process
+			if (strcmp(args[numTokens - 1], "&") == 0) {
+				// debug("***fullbuffer:  %s\n", fullbuffer);
+				addBackProcess(fullbuffer, &bg_list);
+			}
+			
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
 				printf(EXEC_ERR, args[0]);
+				// removeBackProcess here
+				
 				exit(EXIT_FAILURE);
 			}
+			
+			// removeBackProcess here
+		
 		    exit(EXIT_SUCCESS);
 		}
 		else{ // Parent Process
@@ -163,10 +170,8 @@ int main(int argc, char *argv[])
 				printf(WAIT_ERR);
 				exit(EXIT_FAILURE);
 			}
-			else {
-				
-			}
 		}
+		
 		
 		// handle exit status
 		if (exit_status != 0)
