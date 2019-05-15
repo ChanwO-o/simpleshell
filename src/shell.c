@@ -58,23 +58,29 @@ int main(int argc, char *argv[])
 	}
 	
 	while(1) {
-		// debug("bloo1\n");
-		debug("conditional_flag: %d\n", conditional_flag);
-		// debug("bloo2\n");
+		// debug("conditional_flag: %d\n", conditional_flag);
 		// check if conditional_flag is 1. if 1, iterate through ll and remove terminated process node
 		if (conditional_flag == 1) {
-			debug("afafaf");
-			debug("** flag is 1; removing process with pid.. **\n");
+			debug("** flag is 1; reap all terminated child processes\n");
 			
 			//removeBackProcess(pid, &bg_list);
-			
-			int removed = removeByPid(&bg_list, pid);
-
-			if (removeByPid(&bg_list, pid) == -1)
-				debug("error removing pid from ll\n");
-			else
-				debug("removed pid from ll\n");
-			
+			// debug("bg_list first node cmd: %s", bg_list.head -> next -> value -> cmd);
+			int status;
+			while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0)
+			{
+				debug("child pid: %d\n", pid);
+				if (WIFEXITED(status)) {
+					debug("child terminated normally; now removing child's pid: %d\n", pid);
+					removeByPid(&bg_list, pid);
+				}
+				// int removed = removeByPid(&bg_list, pid);
+				// if (removed == -1)
+					// debug("error removing pid from ll\n");
+				// else {
+					// debug("removed pid from ll\n");
+					// childcount--;
+				// }
+			}
 			conditional_flag = 0; // no more zombies left to terminate
 			debug("** zombies cleared, flag set back to 0 **\n");
 		}
@@ -152,15 +158,12 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
-		debug("test1\n");
 		// if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		pid = fork();
 		
 		
 		if (pid == 0){ //If zero, then it's the child process
-			debug("child\n");
-			
-			
+			// debug("child\n");
 			// handle background process
 			if (strcmp(args[numTokens - 1], "&") == 0) {
 				// debug("***fullbuffer:  %s\n", fullbuffer);
@@ -180,7 +183,7 @@ int main(int argc, char *argv[])
 		    exit(EXIT_SUCCESS);
 		}
 		else{ // Parent Process
-			debug("parent\n");
+			// debug("parent\n");
 			wait_result = waitpid(pid, &exit_status, 0);
 			if(wait_result == -1){
 				printf(WAIT_ERR);

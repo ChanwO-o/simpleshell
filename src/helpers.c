@@ -69,8 +69,12 @@ void sigint_handler() {
 }
 
 void sigchild_handler() {
-	debug("child process terminated: reaping child and setting flag to 1\n");
-	conditional_flag = 1;
+	debug("child process terminated: setting flag to 1\n");
+	
+	// check if current process is a background process (?) (in linkedlist)
+	
+	
+	conditional_flag = 1; // set flag 1 to denote that there's a terminated child
 	// pid_t pid;
 	// int status;
 	// pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
