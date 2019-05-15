@@ -59,9 +59,19 @@ int main(int argc, char *argv[])
 	
 	while(1) {
 		
-		// check if conditional_flag is 1
-		// if 1, iterate through ll and remove terminmated process node
-		
+		// check if conditional_flag is 1. if 1, iterate through ll and remove terminated process node
+		if (conditional_flag == 1) {
+			debug("** flag is 1; waiting for terminated childs.. **\n");
+			// clearZombies(pid, &bg_list);
+
+			if (removeByPid(bg_list, pid) == -1)
+				debug("error removing pid from ll\n");
+			else
+				debug("removed pid from ll\n");
+			
+			conditional_flag = 0; // no more zombies left to terminate
+			debug("** zombies cleared, flag set back to 0 **\n");
+		}
 		
 		// DO NOT MODIFY buffer
 		// The buffer is dynamically allocated, we need to free it at the end of the loop

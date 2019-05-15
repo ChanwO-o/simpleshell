@@ -60,6 +60,10 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	// printList(bg_list, INT_MODE);
 }
 
+void clearZombies(pid_t pid, List_t* bg_list) {
+	// int removeByPid(List_t* list, pid_t p);
+}
+
 void sigint_handler() {
 	debug("ctrl-c pressed\n");
 }
