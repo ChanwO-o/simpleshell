@@ -59,12 +59,10 @@ int main(int argc, char *argv[])
 	
 	while(1) {
 		// debug("conditional_flag: %d\n", conditional_flag);
-		// check if conditional_flag is 1. if 1, iterate through ll and remove terminated process node
+		// check if conditional_flag is 1. if 1, remove terminated process node from linkedlist
 		if (conditional_flag == 1) {
 			debug("** flag is 1; reap all terminated child processes\n");
 			
-			//removeBackProcess(pid, &bg_list);
-			// debug("bg_list first node cmd: %s", bg_list.head -> next -> value -> cmd);
 			int status;
 			while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0)
 			{
@@ -158,28 +156,22 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
-		// if not a built-in command, fork and run the command on a child process (as to not clog up parent)
-		pid = fork();
+		
+		pid = fork(); // if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		
 		
 		if (pid == 0){ //If zero, then it's the child process
 			// debug("child\n");
 			// handle background process
 			if (strcmp(args[numTokens - 1], "&") == 0) {
-				// debug("***fullbuffer:  %s\n", fullbuffer);
 				addBackProcess(fullbuffer, &bg_list);
 			}
 			
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
 				printf(EXEC_ERR, args[0]);
-				// removeBackProcess here
-				
 				exit(EXIT_FAILURE);
 			}
-			
-			// removeBackProcess here
-		
 		    exit(EXIT_SUCCESS);
 		}
 		else{ // Parent Process

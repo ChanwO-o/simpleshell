@@ -60,8 +60,12 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	// printList(bg_list, INT_MODE);
 }
 
-void removeBackProcess(pid_t pid, List_t* bg_list) {
-	// int removeByPid(List_t* list, pid_t p);
+// void removeBackProcess(pid_t pid, List_t* bg_list) {
+	// // int removeByPid(List_t* list, pid_t p);
+// }
+
+int isBackgroundProcess(pid_t pid, List_t* bg_list) {
+	
 }
 
 void sigint_handler() {

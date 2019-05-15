@@ -14,7 +14,12 @@ void addBackProcess(char* buffer, List_t* bg_list);
 /*
  * Remove back process with given pid
  */
-void removeBackProcess(pid_t pid, List_t* bg_list);
+// void removeBackProcess(pid_t pid, List_t* bg_list);
+
+/*
+ * Return 1 if pid is a background process (in linkedlist), otherwise return 0
+ */
+int isBackgroundProcess(pid_t pid, List_t* bg_list);
 
 /*
  * Handle ctrl-c thing
