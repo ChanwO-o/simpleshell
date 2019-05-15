@@ -58,12 +58,16 @@ int main(int argc, char *argv[])
 	}
 	
 	while(1) {
-		
 		// check if a background child process was terminated. if 1, remove the process node from linkedlist
 		if (conditional_flag == 1) {
-			debug("flag is 1; traverse through ll and remove all terminated child processes\n");
+			debug("flag is 1; traverse through ll and remove the terminated child process\n");
 			
-			removeTerminatedFromList(&bg_list);
+			// printList(&bg_list, STR_MODE);
+			debug("length of list: %d\n", bg_list.length);
+			removeByPid(&bg_list, getpid());
+			debug("new length of list: %d\n", bg_list.length);
+			// removeTerminatedFromList(&bg_list);
+			
 			
 			// int status;
 			// pid_t pid_temp;
@@ -174,16 +178,17 @@ int main(int argc, char *argv[])
 			// }
 		// }
 		
+		// handle background process
+		if (strcmp(args[numTokens - 1], "&") == 0) {
+			addBackProcess(fullbuffer, &bg_list);
+		}
 		
 		pid = fork(); // if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		
 		
 		if (pid == 0){ //If zero, then it's the child process
 			// debug("child\n");
-			// handle background process
-			if (strcmp(args[numTokens - 1], "&") == 0) {
-				addBackProcess(fullbuffer, &bg_list);
-			}
+			
 			
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking

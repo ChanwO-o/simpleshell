@@ -40,12 +40,9 @@ int processComparator(void *process1, void *process2) {
 
 void addBackProcess(char* buffer, List_t* bg_list) {
 	// debug("***buffer:  %s\n", buffer);
-	childcount++; // increase child counter
-	debug("New child process; childcount: %d\n", childcount);
 	
 	// create linkedlist node
 	struct ProcessEntry* processentry = (struct ProcessEntry*) malloc(sizeof(struct ProcessEntry));
-	// debug("1\n");
 	processentry -> cmd = buffer;
 	processentry -> pid = getpid();
 	processentry -> seconds = time(NULL);
@@ -54,19 +51,14 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	// debug("pid: %d\n", processentry -> pid);
 	// debug("seconds: %d\n", (int) processentry -> seconds);
 	
-	insertRear(bg_list, processentry);
-	
-	
-	// printList(bg_list, STR_MODE);
-	
-	
-	node_t* firstnode = bg_list -> head;
+	insertInOrder(bg_list, processentry);
+	// node_t* firstnode = bg_list -> head;
 	// if (firstnode == NULL)
 		// debug("firstnode null\n");
 	// else
 		// debug("firstnode not null\n");
-	ProcessEntry_t* firstPE = (ProcessEntry_t*) firstnode -> value;
-	char* firstcmd = firstPE -> cmd;
+	// ProcessEntry_t* firstPE = (ProcessEntry_t*) firstnode -> value;
+	// char* firstcmd = firstPE -> cmd;
 	// pid_t firstpid = firstPE -> pid;
 	// if (firstPE == NULL)
 		// debug("firstPE null\n");
@@ -76,17 +68,19 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	// debug("first node pid: %d\n", firstpid);
 }
 
-void removeTerminatedFromList(List_t* bg_list) {
-	node_t* current = bg_list -> head;
+// void removeTerminatedFromList(List_t* bg_list) {
+	// node_t* current = bg_list -> head;
 	
-	while(current != NULL) {
-		debug("current node: %d", current -> value);
-		// if (current.value
+	// while(current != NULL) {
+		// // debug("current node pid: %d\n", ((ProcessEntry_t*) current -> value) -> pid);
+		// pid_t p = ((ProcessEntry_t*) current -> value) -> pid;
+		// // if (p is terminated)
+			// removeByPid(bg_list, p);
 		
-		current = current -> next;
-	}
-	debug("traverse end\n");
-}
+		// current = current -> next;
+	// }
+	// debug("traverse end\n");
+// }
 
 // void removeBackProcess(pid_t pid, List_t* bg_list) {
 	// // int removeByPid(List_t* list, pid_t p);
@@ -104,9 +98,18 @@ void sigchild_handler() {
 	debug("child process terminated: setting flag to 1\n");
 	
 	// check if current process is a background process (?) (in linkedlist)
-	
+	// int result = 0;
+	// node_t* current = bg_list -> head;
+	// while(current != NULL) {
+		// // debug("current node pid: %d\n", ((ProcessEntry_t*) current -> value) -> pid);
+		// pid_t p = ((ProcessEntry_t*) current -> value) -> pid;
+		// removeByPid(bg_list, p);
+		
+		// current = current -> next;
+	// }
 	
 	conditional_flag = 1; // set flag 1 to denote that there's a terminated child
+	
 	// pid_t pid;
 	// int status;
 	// pid = waitpid(-1, &status, WNOHANG | WUNTRACED);

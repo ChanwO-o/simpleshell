@@ -14,7 +14,7 @@ void addBackProcess(char* buffer, List_t* bg_list);
 /*
  * Remove terminated processes from linked list
  */
-void removeTerminatedFromList(List_t* bg_list);
+// void removeTerminatedFromList(List_t* bg_list);
 
 /*
  * Remove back process with given pid
