@@ -190,9 +190,13 @@ int main(int argc, char *argv[])
 		    exit(EXIT_SUCCESS);
 		}
 		else{ // Parent Process
-			// debug("parent\n");
-			wait_result = waitpid(pid, &exit_status, 0);
-			// debug("wait_result: %d\n", wait_result);
+			if (strcmp(args[numTokens - 1], "&") == 0) {
+				// if background cmd was called, just ignore since the child process is handlilng it anyways
+			}
+			else { // else, wait for the process
+				wait_result = waitpid(pid, &exit_status, 0);
+				// debug("wait_result: %d\n", wait_result);
+			}
 			if(wait_result == -1){
 				printf(WAIT_ERR);
 				exit(EXIT_FAILURE);
