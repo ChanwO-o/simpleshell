@@ -39,8 +39,11 @@ int processComparator(void *process1, void *process2) {
 }
 
 void addBackProcess(char* buffer, List_t* bg_list) {
-	// debug("***buffer:  %s\n", buffer);
-	
+	// debug("last char of buffer: %c", buffer[strlen(buffer) - 1]);
+	if(buffer[strlen(buffer) - 1] == '\n') {
+		debug("replacing new line with endln\n");
+		buffer[strlen(buffer) - 1] = '\0';
+	}
 	// create linkedlist node
 	struct ProcessEntry* processentry = (struct ProcessEntry*) malloc(sizeof(struct ProcessEntry));
 	processentry -> cmd = buffer;
