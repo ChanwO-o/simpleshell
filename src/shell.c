@@ -58,22 +58,27 @@ int main(int argc, char *argv[])
 	}
 	
 	while(1) {
-		// debug("conditional_flag: %d\n", conditional_flag);
-		// check if conditional_flag is 1. if 1, remove terminated process node from linkedlist
+		
+		// check if a background child process was terminated. if 1, remove the process node from linkedlist
 		if (conditional_flag == 1) {
-			debug("flag is 1; reap all terminated child processes\n");
+			debug("flag is 1; traverse through ll and remove all terminated child processes\n");
 			
-			int status;
-			while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0)
-			{
-				debug("child pid: %d\n", pid);
-				if (WIFEXITED(status)) {
-					debug("child terminated normally; now removing child's pid: %d\n", pid);
-					removeByPid(&bg_list, pid);
+			removeTerminatedFromList(&bg_list);
+			
+			// int status;
+			// pid_t pid_temp;
+			// while ((pid_temp = waitpid(pid, &status, WNOHANG | WUNTRACED)) > 0)
+			// {
+				// debug("child pid: %d\n", pid_temp);
+				// if (WIFEXITED(status)) {
+					// debug("child terminated normally; now removing child's pid: %d\n", pid_temp);
+					// removeByPid(&bg_list, pid_temp);
 					
-					fprintf(stdout, BG_TERM);
-				}
-			}
+					// fprintf(stdout, BG_TERM);
+				// }
+			// }
+			// debug("pid: %d\n", pid_temp);
+			
 			conditional_flag = 0; // no more zombies left to terminate
 			debug("zombies cleared, flag set back to 0\n");
 		}
@@ -151,6 +156,24 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
+		// handle redirection
+		// int i;
+		// for (i = 1; i < numTokens; ++i) {
+			// if (strcmp(args[i], "<") == 0) {
+				// debug("stdin from: %s\n", args[i + 1]);
+				
+			// }
+			// if (strcmp(args[i], ">") == 0) {
+				// debug("stdout to: %s\n", args[i + 1]);
+			// }
+			// if (strcmp(args[i], "2>") == 0) {
+				// debug("stderr to: %s\n", args[i + 1]);
+			// }
+			// if (strcmp(args[i], ">>") == 0) {
+				// debug("append to: %s\n", args[i + 1]);
+			// }
+		// }
+		
 		
 		pid = fork(); // if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		
@@ -172,6 +195,7 @@ int main(int argc, char *argv[])
 		else{ // Parent Process
 			// debug("parent\n");
 			wait_result = waitpid(pid, &exit_status, 0);
+			// debug("wait_result: %d\n", wait_result);
 			if(wait_result == -1){
 				printf(WAIT_ERR);
 				exit(EXIT_FAILURE);

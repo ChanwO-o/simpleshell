@@ -12,6 +12,11 @@ int processComparator(void *process1, void *process2);
 void addBackProcess(char* buffer, List_t* bg_list);
 
 /*
+ * Remove terminated processes from linked list
+ */
+void removeTerminatedFromList(List_t* bg_list);
+
+/*
  * Remove back process with given pid
  */
 // void removeBackProcess(pid_t pid, List_t* bg_list);

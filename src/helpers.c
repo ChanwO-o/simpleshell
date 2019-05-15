@@ -54,10 +54,38 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 	// debug("pid: %d\n", processentry -> pid);
 	// debug("seconds: %d\n", (int) processentry -> seconds);
 	
-	node_t node;
-	node.value = processentry;
-	insertRear(bg_list, &node);
-	// printList(bg_list, INT_MODE);
+	insertRear(bg_list, processentry);
+	
+	
+	// printList(bg_list, STR_MODE);
+	
+	
+	node_t* firstnode = bg_list -> head;
+	// if (firstnode == NULL)
+		// debug("firstnode null\n");
+	// else
+		// debug("firstnode not null\n");
+	ProcessEntry_t* firstPE = (ProcessEntry_t*) firstnode -> value;
+	char* firstcmd = firstPE -> cmd;
+	// pid_t firstpid = firstPE -> pid;
+	// if (firstPE == NULL)
+		// debug("firstPE null\n");
+	// else
+		// debug("firstPE not null\n");
+	// debug("first node cmd: %s\n", firstcmd);
+	// debug("first node pid: %d\n", firstpid);
+}
+
+void removeTerminatedFromList(List_t* bg_list) {
+	node_t* current = bg_list -> head;
+	
+	while(current != NULL) {
+		debug("current node: %d", current -> value);
+		// if (current.value
+		
+		current = current -> next;
+	}
+	debug("traverse end\n");
 }
 
 // void removeBackProcess(pid_t pid, List_t* bg_list) {
