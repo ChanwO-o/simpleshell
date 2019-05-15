@@ -62,26 +62,13 @@ int main(int argc, char *argv[])
 		if (conditional_flag == 1) {
 			debug("flag is 1; traverse through ll and remove the terminated child process\n");
 			
-			// printList(&bg_list, STR_MODE);
-			debug("length of list: %d\n", bg_list.length);
+			// get the ProcessEntry object for this pid
+			ProcessEntry_t processentry = getByPid(getpid(), &bg_list);
 			removeByPid(&bg_list, getpid());
-			debug("new length of list: %d\n", bg_list.length);
+			printf(BG_TERM, getpid(), processentry.cmd);
+			
+			// debug("new length of list: %d\n", bg_list.length);
 			// removeTerminatedFromList(&bg_list);
-			
-			
-			// int status;
-			// pid_t pid_temp;
-			// while ((pid_temp = waitpid(pid, &status, WNOHANG | WUNTRACED)) > 0)
-			// {
-				// debug("child pid: %d\n", pid_temp);
-				// if (WIFEXITED(status)) {
-					// debug("child terminated normally; now removing child's pid: %d\n", pid_temp);
-					// removeByPid(&bg_list, pid_temp);
-					
-					// fprintf(stdout, BG_TERM);
-				// }
-			// }
-			// debug("pid: %d\n", pid_temp);
 			
 			conditional_flag = 0; // no more zombies left to terminate
 			debug("zombies cleared, flag set back to 0\n");
