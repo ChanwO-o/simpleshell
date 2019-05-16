@@ -120,7 +120,7 @@ void sigint_handler() {
 }
 
 void sigchild_handler() {
-	debug("child process terminated: setting flag to 1\n");
+	// debug("child process terminated: setting flag to 1\n");
 	
 	// check if current process is a background process (?) (in linkedlist)
 	// int result = 0;

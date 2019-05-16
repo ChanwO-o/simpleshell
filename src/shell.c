@@ -60,22 +60,22 @@ int main(int argc, char *argv[])
 	while(1) {
 		// check if a background child process was terminated. if 1, remove the process node from linkedlist
 		if (conditional_flag == 1) {
-			debug("flag is 1; check if this is background or not\n");
+			// debug("flag is 1; check if this is background or not\n");
 			
 			// get the ProcessEntry object for this pid; if this is foreground, will not be in the ll and return NULL
 			ProcessEntry_t* processentry = getByPid(getpid(), &bg_list);
 			if (processentry != NULL) {
-				debug("process is background; remove from ll\n");
+				// debug("process is background; remove from ll\n");
 				removeByPid(&bg_list, getpid());
 				printf(BG_TERM, getpid(), processentry -> cmd);
 			}
-			else
-				debug("process is foreground; ignore\n");
+			// else
+				// debug("process is foreground; ignore\n");
 			
-			debug("new length of list: %d\n", bg_list.length);
+			// debug("new length of list: %d\n", bg_list.length);
 			
 			conditional_flag = 0; // no more zombies left to terminate
-			debug("zombies cleared, flag set back to 0\n");
+			// debug("zombies cleared, flag set back to 0\n");
 		}
 		
 		// DO NOT MODIFY buffer
@@ -152,36 +152,76 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		
-		// handle redirection
-		// int i;
-		// for (i = 1; i < numTokens; ++i) {
-			// if (strcmp(args[i], "<") == 0) {
-				// debug("stdin from: %s\n", args[i + 1]);
-				
-			// }
-			// if (strcmp(args[i], ">") == 0) {
-				// debug("stdout to: %s\n", args[i + 1]);
-			// }
-			// if (strcmp(args[i], "2>") == 0) {
-				// debug("stderr to: %s\n", args[i + 1]);
-			// }
-			// if (strcmp(args[i], ">>") == 0) {
-				// debug("append to: %s\n", args[i + 1]);
-			// }
-		// }
+		// handle redirection: only necessary when there's at least 3 tokens
+		int inputfd, outputfd, stderrfd, appendfd; // file descriptors for using in child
+		int opinput = -1; int opoutput = -1; int opstderr = -1; int opappend = -1; // index of args where each redirect symbol occurs ( <  >  2>  >> )
+		if (numTokens >= 3)
+		{
+			// printf("current pid: %d\n", pid);
+			int i;
+			for (i = 1; i < numTokens - 1; ++i) {
+				if (strcmp(args[i], "<") == 0) {
+					opinput = i;
+					debug("stdin from: %s\n", args[i + 1]);
+				}
+				if (strcmp(args[i], ">") == 0) {
+					opoutput = i;
+					debug("stdout to: %s\n", args[i + 1]);
+				}
+				if (strcmp(args[i], "2>") == 0) {
+					opstderr = i;
+					debug("stderr to: %s\n", args[i + 1]);
+				}
+				if (strcmp(args[i], ">>") == 0) {
+					opappend = i;
+					debug("append to: %s\n", args[i + 1]);
+				}
+			}
+			char c;
+			mode_t mode =  S_IRUSR;
+			if (opinput != -1) {
+				debug("aa\n");
+				inputfd = open(args[opinput + 1], O_RDONLY, mode);
+			}
+			if (opoutput != -1)
+				outputfd = open(args[i + 1], O_WRONLY);
+			if (opstderr != -1)
+				stderrfd = open(args[i + 1], O_WRONLY);
+			if (opappend != -1)
+				appendfd = open(args[i + 1], O_APPEND);
+			
+		}
 		
 		// handle background process
 		if (strcmp(args[numTokens - 1], "&") == 0) {
-			addBackProcess(fullbuffer, &bg_list);
+			addBackProcess(fullbuffer, &bg_list); // + pid
 		}
 		
 		pid = fork(); // if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		
 		
 		if (pid == 0){ //If zero, then it's the child process
-			// debug("child\n");
+			//read(inputfd, &c, 0);
+			
+			if (opinput != -1) {
+				if (dup2(inputfd, STDIN_FILENO) < 0)
+					perror("error dupin\n");
+				if (close(STDIN_FILENO) < 0)
+					perror("error closing stdin\n");
+				if (close(inputfd) < 0)
+					perror ("error closing inputfd\n");
+			}
+			if (opoutput != -1)
+				outputfd = open(args[i + 1], O_WRONLY);
+			if (opstderr != -1)
+				stderrfd = open(args[i + 1], O_WRONLY);
+			if (opappend != -1)
+				appendfd = open(args[i + 1], O_APPEND);
 			
 			
+			
+		
+			// printf("current pid before execvp: %d\n", pid);
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
 				printf(EXEC_ERR, args[0]);
