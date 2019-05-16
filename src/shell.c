@@ -58,12 +58,10 @@ int main(int argc, char *argv[])
 	}
 	
 	while(1) {
-		// debug("while1 pid: %d\n", pid);
 		// check if a background child process was terminated. if 1, remove the process node from linkedlist
 		if (conditional_flag == 1) {
 			debug("flag is 1; check if this is background or not\n");
-			// debug("c_flag pid: %d\n", pid);
-			// get the ProcessEntry object for this pid; if this is foreground, will not be in the ll and return NULL
+			// get the ProcessEntry object for this pid; if this is foreground, will not be in the ll and should return NULL
 			ProcessEntry_t* processentry = getByPid(pid, &bg_list);
 			if (processentry != NULL) {
 				debug("process is background; remove from ll\n");
@@ -193,35 +191,20 @@ int main(int argc, char *argv[])
 			
 		}
 		
-		// handle background process
-		struct ProcessEntry* processentry;
-		if (strcmp(args[numTokens - 1], "&") == 0) {
-			// processentry = addBackProcess(fullbuffer, &bg_list);
-			// addBackProcess(fullbuffer, &bg_list);
-			
-			if(fullbuffer[strlen(fullbuffer) - 1] == '\n') // debug("replacing new line with endln\n");
-				fullbuffer[strlen(fullbuffer) - 1] = '\0';
-			processentry = (struct ProcessEntry*) malloc(sizeof(struct ProcessEntry));
-			processentry -> cmd = fullbuffer;
-			// processentry -> pid = getpid();
-			processentry -> seconds = time(NULL);
-		}
 		
 		pid = fork(); // if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		
+		
+		// handle background process
 		if (strcmp(args[numTokens - 1], "&") == 0) {
 			if (pid != 0) {
-				// this is when parent is 'fixing' the value of pid stored in the node in the linkedlist that was added up there at addBackProcess();
-				debug("this is parent! process entry is holding pid of %d\n", processentry -> pid);
-				debug("this is also parent! inserting new pid %d\n", pid);
-				processentry -> pid = pid;
-				insertInOrder(&bg_list, processentry);
+				// ONLY FOR THE PARENT PROCESS: create a ProcessEntry node and add to ll with the pid of the child process that was just created
+				addBackProcess(fullbuffer, &bg_list, pid);
 			}
 		}
 		
 		if (pid == 0){ //If zero, then it's the child process
 			//read(inputfd, &c, 0);
-			
 			if (opinput != -1) {
 				if (dup2(inputfd, STDIN_FILENO) < 0)
 					perror("error dupin\n");
@@ -237,9 +220,6 @@ int main(int argc, char *argv[])
 			if (opappend != -1)
 				appendfd = open(args[i + 1], O_APPEND);
 			
-			
-			
-		
 			// printf("current pid before execvp: %d\n", pid);
 			exec_result = execvp(args[0], &args[0]);
 			if(exec_result == -1){ //Error checking
@@ -250,11 +230,10 @@ int main(int argc, char *argv[])
 		}
 		else{ // Parent Process
 			if (strcmp(args[numTokens - 1], "&") == 0) {
-				// if background cmd was called, just ignore since the child process is handlilng it anyways
+				// if background cmd, just ignore since the child process is handlilng it anyways. This allows user to keep using the shell without waiting
 			}
 			else { // else, wait for the process
 				wait_result = waitpid(pid, &exit_status, 0);
-				// debug("wait_result: %d\n", wait_result);
 			}
 			if(wait_result == -1){
 				printf(WAIT_ERR);
