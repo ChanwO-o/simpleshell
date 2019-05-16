@@ -9,6 +9,7 @@ int processComparator(void *process1, void *process2);
 /*
  * Create a node from the passed command and add to linked list
  */
+// ProcessEntry_t* addBackProcess(char* buffer, List_t* bg_list);
 void addBackProcess(char* buffer, List_t* bg_list);
 
 /*

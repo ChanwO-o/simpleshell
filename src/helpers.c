@@ -38,7 +38,8 @@ int processComparator(void *process1, void *process2) {
 		return 0;
 }
 
-void addBackProcess(char* buffer, List_t* bg_list) {
+// ProcessEntry_t* addBackProcess(char* buffer, List_t* bg_list) {
+addBackProcess(char* buffer, List_t* bg_list) {
 	// debug("last char of buffer: %c", buffer[strlen(buffer) - 1]);
 	if(buffer[strlen(buffer) - 1] == '\n') // debug("replacing new line with endln\n");
 		buffer[strlen(buffer) - 1] = '\0';
@@ -68,6 +69,7 @@ void addBackProcess(char* buffer, List_t* bg_list) {
 		// debug("firstPE not null\n");
 	// debug("first node cmd: %s\n", firstcmd);
 	// debug("first node pid: %d\n", firstpid);
+	// return processentry;
 }
 
 ProcessEntry_t* getByPid(pid_t targetpid, List_t* bg_list) {
@@ -111,6 +113,9 @@ void killAllBackgrounds(List_t* bg_list) {
 		printBGPEntry(processentry);
 		pid_t p = processentry -> pid;
 		kill(p, SIGKILL);
+		removeByPid(bg_list, processentry -> pid);
+		printf(BG_TERM, processentry -> pid, processentry -> cmd);
+			
 		current = current -> next;
 	}
 }

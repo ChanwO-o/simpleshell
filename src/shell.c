@@ -58,21 +58,22 @@ int main(int argc, char *argv[])
 	}
 	
 	while(1) {
+		// debug("while1 pid: %d\n", pid);
 		// check if a background child process was terminated. if 1, remove the process node from linkedlist
 		if (conditional_flag == 1) {
-			// debug("flag is 1; check if this is background or not\n");
-			
+			debug("flag is 1; check if this is background or not\n");
+			// debug("c_flag pid: %d\n", pid);
 			// get the ProcessEntry object for this pid; if this is foreground, will not be in the ll and return NULL
-			ProcessEntry_t* processentry = getByPid(getpid(), &bg_list);
+			ProcessEntry_t* processentry = getByPid(pid, &bg_list);
 			if (processentry != NULL) {
-				// debug("process is background; remove from ll\n");
-				removeByPid(&bg_list, getpid());
-				printf(BG_TERM, getpid(), processentry -> cmd);
+				debug("process is background; remove from ll\n");
+				removeByPid(&bg_list, pid);
+				printf(BG_TERM, pid, processentry -> cmd);
 			}
-			// else
-				// debug("process is foreground; ignore\n");
+			else
+				debug("process is foreground; ignore\n");
 			
-			// debug("new length of list: %d\n", bg_list.length);
+			debug("new length of list: %d\n", bg_list.length);
 			
 			conditional_flag = 0; // no more zombies left to terminate
 			// debug("zombies cleared, flag set back to 0\n");
@@ -193,12 +194,30 @@ int main(int argc, char *argv[])
 		}
 		
 		// handle background process
+		struct ProcessEntry* processentry;
 		if (strcmp(args[numTokens - 1], "&") == 0) {
-			addBackProcess(fullbuffer, &bg_list); // + pid
+			// processentry = addBackProcess(fullbuffer, &bg_list);
+			// addBackProcess(fullbuffer, &bg_list);
+			
+			if(fullbuffer[strlen(fullbuffer) - 1] == '\n') // debug("replacing new line with endln\n");
+				fullbuffer[strlen(fullbuffer) - 1] = '\0';
+			processentry = (struct ProcessEntry*) malloc(sizeof(struct ProcessEntry));
+			processentry -> cmd = fullbuffer;
+			// processentry -> pid = getpid();
+			processentry -> seconds = time(NULL);
 		}
 		
 		pid = fork(); // if not a built-in command, fork and run the command on a child process (as to not clog up parent)
 		
+		if (strcmp(args[numTokens - 1], "&") == 0) {
+			if (pid != 0) {
+				// this is when parent is 'fixing' the value of pid stored in the node in the linkedlist that was added up there at addBackProcess();
+				debug("this is parent! process entry is holding pid of %d\n", processentry -> pid);
+				debug("this is also parent! inserting new pid %d\n", pid);
+				processentry -> pid = pid;
+				insertInOrder(&bg_list, processentry);
+			}
+		}
 		
 		if (pid == 0){ //If zero, then it's the child process
 			//read(inputfd, &c, 0);
