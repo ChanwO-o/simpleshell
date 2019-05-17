@@ -19,9 +19,7 @@
 	#define info(fmt, ...) do{printf("INFO: " fmt, ##__VA_ARGS__);}while(0)
 #endif
 
-int errno = 0;
 int conditional_flag = 0; // flag denoting that there's a terminated child process (1) or none (0)
-int childcount = 0; // number of active child processes alive
 
 int main(int argc, char *argv[])
 {
@@ -93,6 +91,7 @@ int main(int argc, char *argv[])
 		// No more input from STDIN, free buffer and terminate
 		if(nbytes == -1) {
 			free(buffer);
+			free(fullbuffer);
 			break;
 		}
 
@@ -101,11 +100,11 @@ int main(int argc, char *argv[])
 			buffer[nbytes- 1] = '\0';
 		
 		char s[100];
-		// debug("%s\n", getcwd(s, 100));
 		
 		// Handling empty strings
 		if(strcmp(buffer, "") == 0) {
 			free(buffer);
+			free(fullbuffer);
 			continue;
 		}
 		
@@ -117,6 +116,7 @@ int main(int argc, char *argv[])
 		// handle 0 args (whitespace input)
 		if (numTokens == 0) {
 			free(buffer);
+			free(fullbuffer);
 			continue;
 		}
 		
@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
 		if(strcmp(args[0],"exit") == 0) {
 			killAllBackgrounds(&bg_list);
 			free(buffer);
+			free(fullbuffer);
 			return 0;
 		}
 		
@@ -131,6 +132,7 @@ int main(int argc, char *argv[])
 		if (strcmp(args[0], "estatus") == 0) {
 			printf("%d\n", exit_status);
 			free(buffer);
+			free(fullbuffer);
 			continue;
 		}
 		
@@ -148,6 +150,7 @@ int main(int argc, char *argv[])
 					fprintf(stderr, DIR_ERR);
 			}
 			free(buffer);
+			free(fullbuffer);
 			continue;
 		}
 		
@@ -220,13 +223,18 @@ int main(int argc, char *argv[])
 			if (opappend != -1)
 				appendfd = open(args[i + 1], O_APPEND);
 			
-			// printf("current pid before execvp: %d\n", pid);
+			// perror ("aaaa\n");
 			exec_result = execvp(args[0], &args[0]);
+			// perror ("bbbb\n");
 			if(exec_result == -1){ //Error checking
+				// perror ("cccc\n");
 				printf(EXEC_ERR, args[0]);
+				// perror ("dddd\n");
 				exit(EXIT_FAILURE);
 			}
+			perror ("eeee\n");
 		    exit(EXIT_SUCCESS);
+			perror ("ffff\n");
 		}
 		else{ // Parent Process
 			if (strcmp(args[numTokens - 1], "&") == 0) {
@@ -248,6 +256,7 @@ int main(int argc, char *argv[])
 
 		// Free the buffer allocated from getline
 		free(buffer);
+		free(fullbuffer);
 	}
 	return 0;
 }

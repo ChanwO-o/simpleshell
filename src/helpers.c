@@ -18,17 +18,18 @@
 	#define info(fmt, ...) do{printf("INFO: " fmt, ##__VA_ARGS__);}while(0)
 #endif
 
-extern int errno;
 extern int conditional_flag;
-extern int childcount;
 
-int processComparator(void *process1, void *process2) {
+int processComparator(void* process1, void* process2) {
 	ProcessEntry_t* p1 = (ProcessEntry_t*) process1;
 	ProcessEntry_t* p2 = (ProcessEntry_t*) process2;
 	
-	time_t* time1 = (time_t*) p1 -> seconds;
-	time_t* time2 = (time_t*) p2 -> seconds;
-	double result = difftime(*time1, *time2);
+	time_t time1 = p1 -> seconds;
+	time_t time2 = p2 -> seconds;
+	
+	debug("time1 seconds: %d\n", time1);
+	
+	double result = difftime(time1, time2);
 	
 	if (result < 0)
 		return -1;
@@ -44,13 +45,15 @@ void addBackProcess(char* buffer, List_t* bg_list, pid_t pid) {
 	
 	// create linkedlist node
 	struct ProcessEntry* processentry = (struct ProcessEntry*) malloc(sizeof(struct ProcessEntry));
-	processentry -> cmd = buffer;
+	// processentry -> cmd = buffer;
+	processentry -> cmd = (char*) malloc(50 * sizeof(char));
+	strcpy(processentry -> cmd, buffer);
 	processentry -> pid = pid;
 	processentry -> seconds = time(NULL);
 	
-	// debug("cmd: %s\n", processentry -> cmd);
-	// debug("pid: %d\n", processentry -> pid);
-	// debug("seconds: %d\n", (int) processentry -> seconds);
+	debug("cmd: %s\n", processentry -> cmd);
+	debug("pid: %d\n", processentry -> pid);
+	debug("seconds: %d\n", (int) processentry -> seconds);
 	
 	insertInOrder(bg_list, processentry);
 }
@@ -68,16 +71,16 @@ ProcessEntry_t* getByPid(pid_t targetpid, List_t* bg_list) {
 }
 
 void killAllBackgrounds(List_t* bg_list) {
-	node_t* current = bg_list -> head;
-	while(current != NULL) {
-		ProcessEntry_t* processentry = (ProcessEntry_t*) current -> value;
+	while (bg_list -> head != NULL) {
+		node_t* headnode = bg_list -> head;
+		ProcessEntry_t* processentry = (ProcessEntry_t*) headnode -> value;
 		printBGPEntry(processentry);
 		pid_t p = processentry -> pid;
 		kill(p, SIGKILL);
-		removeByPid(bg_list, processentry -> pid);
+		removeByPid(bg_list, p);
 		printf(BG_TERM, processentry -> pid, processentry -> cmd);
-			
-		current = current -> next;
+		free(processentry -> cmd);
+		free(processentry);
 	}
 }
 
