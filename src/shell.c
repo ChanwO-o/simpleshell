@@ -179,18 +179,19 @@ int main(int argc, char *argv[])
 					debug("append to: %s\n", args[i + 1]);
 				}
 			}
-			char c;
+			// char c;
 			mode_t mode =  S_IRUSR;
 			if (opinput != -1) {
-				debug("aa\n");
+				// debug("aa\n");
 				inputfd = open(args[opinput + 1], O_RDONLY, mode);
 			}
-			if (opoutput != -1)
-				outputfd = open(args[i + 1], O_WRONLY);
+			if (opoutput != -1) {
+				outputfd = open(args[i + 1], O_WRONLY, 644);
+			}
 			if (opstderr != -1)
-				stderrfd = open(args[i + 1], O_WRONLY);
+				stderrfd = open(args[i + 1], O_WRONLY, 644);
 			if (opappend != -1)
-				appendfd = open(args[i + 1], O_APPEND);
+				appendfd = open(args[i + 1], O_APPEND, 644);
 			
 		}
 		
@@ -209,6 +210,7 @@ int main(int argc, char *argv[])
 		if (pid == 0){ //If zero, then it's the child process
 			//read(inputfd, &c, 0);
 			if (opinput != -1) {
+				debug("dup-ing to stdin\n");
 				if (dup2(inputfd, STDIN_FILENO) < 0)
 					perror("error dupin\n");
 				if (close(STDIN_FILENO) < 0)
@@ -223,18 +225,12 @@ int main(int argc, char *argv[])
 			if (opappend != -1)
 				appendfd = open(args[i + 1], O_APPEND);
 			
-			// perror ("aaaa\n");
 			exec_result = execvp(args[0], &args[0]);
-			// perror ("bbbb\n");
 			if(exec_result == -1){ //Error checking
-				// perror ("cccc\n");
 				printf(EXEC_ERR, args[0]);
-				// perror ("dddd\n");
 				exit(EXIT_FAILURE);
 			}
-			perror ("eeee\n");
 		    exit(EXIT_SUCCESS);
-			perror ("ffff\n");
 		}
 		else{ // Parent Process
 			if (strcmp(args[numTokens - 1], "&") == 0) {
