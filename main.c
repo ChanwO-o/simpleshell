@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h> 
 
 #define MAXARGS 11
 #define ARGMAXLEN 10
@@ -54,12 +55,41 @@ int main()
             argc = 0;
             while (uinput != NULL && argc < MAXARGS)
             {
-                args[argc] = malloc(ARGMAXLEN * sizeof(char));
-                strcpy(args[argc], uinput);
-                argc++;
-                uinput = strtok(NULL, " ");
+				char *p = strchr(uinput, '\n'); // remove newline char
+				if (p != NULL) *p = '\0';
+					
+				if (argc == 0)
+				{
+					args[argc] = malloc(ARGMAXLEN * sizeof(char));
+					strcpy(args[argc], "/bin/");
+					int len = strlen("/bin/");
+					strcpy(args[argc]+len, uinput);
+					++argc;
+					uinput = strtok(NULL, " ");
+				}
+				else
+				{
+					args[argc] = malloc(ARGMAXLEN * sizeof(char));
+					strcpy(args[argc], uinput);
+					argc++;
+					uinput = strtok(NULL, " ");
+				}
             }
             args[argc] = NULL;
+			
+			int pid;
+			if ((pid = fork()) == 0) { // process is child
+				printf("child\n");
+				execv(args[0], args);
+				// execv("/bin/ls", args);
+				printf("child finished\n");
+			}
+			else { // process is parent
+				printf("parent\n");
+				execv(args[0], args);
+				// execv("/bin/ls", args);
+				printf("parent finished\n");
+			}
 
             break; 
 
