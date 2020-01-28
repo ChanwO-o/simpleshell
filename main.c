@@ -28,9 +28,9 @@ void parsecmd(char * buf)
             
         if (argc == 0)
         {
-            int blen = strlen("/bin/");
+            int blen = strlen("./executables/");
             args[argc] = malloc((strlen(uinput)+blen) * sizeof(char));
-            strcpy(args[argc], "/bin/");
+            strcpy(args[argc], "./executables/");
             strcpy(args[argc]+blen, uinput);
         }
         else 
