@@ -35,6 +35,59 @@ void createcmd(char * buf, struct command * c)
     c->args[index-2] = '\0';
 }
 
+void parsecmd(char * buf)
+{
+    char * uinput;
+    char * args[MAXARGS]; 
+    unsigned int argc;
+
+    uinput = strtok(buf, " ");
+
+    argc = 0;
+    while (uinput != NULL && argc < MAXARGS)
+    {
+        char * newline = strchr(uinput, '\n'); // remove newline char
+        if (newline != NULL) *newline = '\0';
+            
+        if (argc == 0)
+        {
+            int blen = strlen("/bin/");
+            args[argc] = malloc((strlen(uinput)+blen) * sizeof(char));
+            strcpy(args[argc], "/bin/");
+            strcpy(args[argc]+blen, uinput);
+        }
+        else
+        {
+            args[argc] = malloc(strlen(uinput) * sizeof(char));
+            strcpy(args[argc], uinput);
+        }
+        ++argc;
+        uinput = strtok(NULL, " ");
+    }
+    args[argc] = NULL;
+
+    execproc(args);
+}
+
+void execproc(char ** args)
+{    
+    int pid;
+    
+    printf("")
+
+
+    if ((pid = fork()) == 0) { // process is child
+        printf("child\n");
+        execv(args[0], args);
+        // execv("/bin/ls", args);
+        printf("child finished\n");
+    }
+    else { // process is parent
+        printf("parent\n");
+        printf("parent finished\n");
+    }
+}
+
 int main()
 {
     char buf[80];
@@ -46,7 +99,9 @@ int main()
 
         if (fgets(buf, sizeof(buf), stdin) != NULL)
         {
-            char ** argv;
+            parsecmd(buf);
+
+            /*
             char * args[MAXARGS]; 
             unsigned int argc;
 
@@ -55,8 +110,8 @@ int main()
             argc = 0;
             while (uinput != NULL && argc < MAXARGS)
             {
-				char *p = strchr(uinput, '\n'); // remove newline char
-				if (p != NULL) *p = '\0';
+				char * newline = strchr(uinput, '\n'); // remove newline char
+				if (newline != NULL) *newline = '\0';
 					
 				if (argc == 0)
 				{
@@ -90,6 +145,7 @@ int main()
 				// execv("/bin/ls", args);
 				printf("parent finished\n");
 			}
+            */
 
             break; 
 
