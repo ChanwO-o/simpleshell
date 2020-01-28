@@ -28,9 +28,9 @@ void parsecmd(char * buf)
             
         if (argc == 0)
         {
-            int blen = strlen("./executables/");
+            int blen = strlen("/bin/");
             args[argc] = malloc((strlen(uinput)+blen) * sizeof(char));
-            strcpy(args[argc], "./executables/");
+            strcpy(args[argc], "/bin/");
             strcpy(args[argc]+blen, uinput);
         }
         else 
@@ -84,7 +84,7 @@ void sigint_handler(int sig)
 void sigchld_handler(int sig)
 {
 	printf("sigchild handler: a child process was terminated\n");
-	exit(0);
+	
 }
 
 void background(char ** args, int argc)
