@@ -68,22 +68,12 @@ void foreground(char ** args, int argc)
     //CHILD PROCESS
     if (pid == 0) 
     {
-        printf("child\n");
         execv(args[0], args);
-        printf("child finished\n");
         exit(0);
-    }
-
-    //PARENT PROCESS
-    else 
-    { 
-        printf("parent finished\n");
     }
     wait(NULL);
 
-    printf("foreground finished\n");
 }
-
 
 int main()
 {
@@ -96,20 +86,12 @@ int main()
 
         if (fgets(buf, sizeof(buf), stdin) != NULL)
         {
-            parsecmd(buf);
-            
-            printf("back to main\n");
-            break; 
-
-            //struct command c;
-            //createcmd(buf, &c);
-            
-            /*
-            if (strcmp(c.cmd, "quit\n") == 0)
-            {
+            uinput = strtok(buf, " \t");
+            if (strcmp(uinput, "quit") == 0 || 
+                    strcmp(uinput, "quit\n") == 0)
                 break;
-            }
-            */
+
+            parsecmd(buf);
         }
     }
 
