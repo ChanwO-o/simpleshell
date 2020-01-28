@@ -71,22 +71,28 @@ void foreground(char ** args, int argc)
     if (pid == 0) 
     {
         execv(args[0], args);
-        exit(0);
     }
     wait(NULL);
 }
 
-void sig_handler(int sig)
+void sigint_handler(int sig)
 {
-    printf("Inside signal handler\n");
+    printf("sigint handler: a process was interrupted\n");
     exit(0);
+}
+
+void sigchld_handler(int sig)
+{
+	printf("sigchild handler: a child process was terminated\n");
+	exit(0);
 }
 
 void background(char ** args, int argc)
 {
     int pid = fork();
 
-    signal(SIGINT, sig_handler);
+    signal(SIGINT, sigint_handler);
+	signal(SIGCHLD, sigchld_handler);
     //CHILD PROCESS
     if (pid == 0)
     {
