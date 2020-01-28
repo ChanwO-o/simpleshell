@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h> 
+#include <signal.h>
 
 #define MAXARGS 11
 #define ARGMAXLEN 10
@@ -52,6 +53,7 @@ void identifyproc(char ** args, int argc)
     if (strcmp(args[argc-1], "&") == 0)
     {
         args[argc-1] = NULL;
+        background(args, argc);
     }
     
     //FOREGROUND PROCESS
@@ -72,7 +74,24 @@ void foreground(char ** args, int argc)
         exit(0);
     }
     wait(NULL);
+}
 
+void sig_handler(int sig)
+{
+    printf("Inside signal handler\n");
+    exit(0);
+}
+
+void background(char ** args, int argc)
+{
+    int pid = fork();
+
+    signal(SIGINT, sig_handler);
+    //CHILD PROCESS
+    if (pid == 0)
+    {
+        execv(args[0], args);
+    }
 }
 
 int main()
@@ -85,13 +104,11 @@ int main()
         printf("prompt>");
 
         if (fgets(buf, sizeof(buf), stdin) != NULL)
-        {
-            uinput = strtok(buf, " \t");
-            if (strcmp(uinput, "quit") == 0 || 
-                    strcmp(uinput, "quit\n") == 0)
+        { 
+            if (strcmp(buf, "quit\n") == 0)
                 break;
-
             parsecmd(buf);
+            
         }
     }
 
