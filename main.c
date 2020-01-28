@@ -11,30 +11,6 @@ struct command
     char args[80];
 };
 
-void createcmd(char * buf, struct command * c)
-{
-    char * uinput;
-    int len;
-    int index = 0;
-    
-    uinput = strtok(buf, " ");
-    strcpy(c->cmd, uinput);
-  
-    while (uinput != NULL)
-    {
-        uinput = strtok(NULL, " ");
-        if (uinput != NULL)
-        {
-            len = strlen(uinput);
-            strcpy(c->args+index, uinput);
-            index += len;
-            c->args[index] = ' ';
-            index++;
-        }
-    }
-    c->args[index-2] = '\0';
-}
-
 void parsecmd(char * buf)
 {
     char * uinput;
@@ -44,7 +20,7 @@ void parsecmd(char * buf)
     uinput = strtok(buf, " ");
 
     argc = 0;
-    while (uinput != NULL && argc < MAXARGS)
+    while (uinput != NULL && argc < MAXARGS && strcmp(uinput, "\n") != 0)
     {
         char * newline = strchr(uinput, '\n'); // remove newline char
         if (newline != NULL) *newline = '\0';
@@ -56,37 +32,58 @@ void parsecmd(char * buf)
             strcpy(args[argc], "/bin/");
             strcpy(args[argc]+blen, uinput);
         }
-        else
+        else 
         {
             args[argc] = malloc(strlen(uinput) * sizeof(char));
             strcpy(args[argc], uinput);
         }
         ++argc;
         uinput = strtok(NULL, " ");
+
     }
     args[argc] = NULL;
 
-    execproc(args);
+    identifyproc(args, argc);
 }
 
-void execproc(char ** args)
-{    
-    int pid;
+void identifyproc(char ** args, int argc)
+{
+    //BACKGROUND PROCESS
+    if (strcmp(args[argc-1], "&") == 0)
+    {
+        args[argc-1] = NULL;
+    }
     
-    printf("")
+    //FOREGROUND PROCESS
+    else
+    {
+        foreground(args, argc);
+    }
+}
 
+void foreground(char ** args, int argc)
+{
+    int pid = fork();
 
-    if ((pid = fork()) == 0) { // process is child
+    //CHILD PROCESS
+    if (pid == 0) 
+    {
         printf("child\n");
         execv(args[0], args);
-        // execv("/bin/ls", args);
         printf("child finished\n");
+        exit(0);
     }
-    else { // process is parent
-        printf("parent\n");
+
+    //PARENT PROCESS
+    else 
+    { 
         printf("parent finished\n");
     }
+    wait(NULL);
+
+    printf("foreground finished\n");
 }
+
 
 int main()
 {
@@ -100,53 +97,8 @@ int main()
         if (fgets(buf, sizeof(buf), stdin) != NULL)
         {
             parsecmd(buf);
-
-            /*
-            char * args[MAXARGS]; 
-            unsigned int argc;
-
-            uinput = strtok(buf, " ");
-
-            argc = 0;
-            while (uinput != NULL && argc < MAXARGS)
-            {
-				char * newline = strchr(uinput, '\n'); // remove newline char
-				if (newline != NULL) *newline = '\0';
-					
-				if (argc == 0)
-				{
-					args[argc] = malloc(ARGMAXLEN * sizeof(char));
-					strcpy(args[argc], "/bin/");
-					int len = strlen("/bin/");
-					strcpy(args[argc]+len, uinput);
-					++argc;
-					uinput = strtok(NULL, " ");
-				}
-				else
-				{
-					args[argc] = malloc(ARGMAXLEN * sizeof(char));
-					strcpy(args[argc], uinput);
-					argc++;
-					uinput = strtok(NULL, " ");
-				}
-            }
-            args[argc] = NULL;
-			
-			int pid;
-			if ((pid = fork()) == 0) { // process is child
-				printf("child\n");
-				execv(args[0], args);
-				// execv("/bin/ls", args);
-				printf("child finished\n");
-			}
-			else { // process is parent
-				printf("parent\n");
-				execv(args[0], args);
-				// execv("/bin/ls", args);
-				printf("parent finished\n");
-			}
-            */
-
+            
+            printf("back to main\n");
             break; 
 
             //struct command c;
