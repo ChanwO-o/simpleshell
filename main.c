@@ -46,8 +46,7 @@ void parsecmd(char * buf)
         }
         uinput = strtok(NULL, " ");
         ++argc;
-    }
-       
+    } 
     while (uinput != NULL)
     {
         char * newline = strchr(uinput, '\n'); // remove newline char
@@ -60,9 +59,6 @@ void parsecmd(char * buf)
             if (newline != NULL) *newline = '\0';
             strcpy(ofname, uinput);
             outFile = ofname;
-
-            printf("OUTPUT REDIRECTION\n");
-            printf("%s\n", ofname);
         }
         else if (strcmp(uinput, "<") == 0)
         {
@@ -71,9 +67,6 @@ void parsecmd(char * buf)
             if (newline != NULL) *newline = '\0';
             strcpy(ifname, uinput);
             inFile = ifname;
-
-            printf("INPUT REDIRECTION\n");
-            printf("%s\n", ifname);
         }
         else if (strcmp(uinput, "&") == 0)
         {
@@ -141,17 +134,6 @@ void foreground(char ** args, int argc, char * outFile, char * inFile)
     wait(NULL);
 }
 
-void sigint_handler(int sig)
-{
-    printf("sigint handler: a process was interrupted\n");
-    exit(0);
-}
-
-void sigchld_handler(int sig)
-{
-	printf("sigchild handler: a child process was terminated\n");
-}
-
 void background(char ** args, int argc, char * outFile, char * inFile)
 {
     int pid = fork();
@@ -161,8 +143,27 @@ void background(char ** args, int argc, char * outFile, char * inFile)
     //CHILD PROCESS
     if (pid == 0)
     {
+        if (outFile != NULL)
+        {
+            outputredir(outFile);
+        }
+        if (inFile != NULL)
+        {
+            inputredir(inFile);
+        }
         execv(args[0], args);
     }
+}
+
+void sigint_handler(int sig)
+{
+    printf("sigint handler: a process was interrupted\n");
+    exit(0);
+}
+
+void sigchld_handler(int sig)
+{
+	printf("sigchild handler: a child process was terminated\n");
 }
 
 int main()
@@ -178,10 +179,8 @@ int main()
         { 
             if (strcmp(buf, "quit\n") == 0)
                 break;
-            parsecmd(buf);
-            
+            parsecmd(buf);       
         }
     }
-
     return 0;
 }
