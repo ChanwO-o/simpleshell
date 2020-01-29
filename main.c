@@ -5,13 +5,6 @@
 #include <stdlib.h>
 
 #define MAXARGS 11
-#define ARGMAXLEN 10
-
-struct command
-{
-    char cmd[80];
-    char args[80];
-};
 
 void parsecmd(char * buf)
 {
@@ -134,6 +127,17 @@ void foreground(char ** args, int argc, char * outFile, char * inFile)
     wait(NULL);
 }
 
+void sigint_handler(int sig)
+{
+    printf("sigint handler: a process was interrupted\n");
+    exit(0);
+}
+
+void sigchld_handler(int sig)
+{
+	printf("sigchild handler: a child process was terminated\n");
+}
+
 void background(char ** args, int argc, char * outFile, char * inFile)
 {
     int pid = fork();
@@ -153,17 +157,6 @@ void background(char ** args, int argc, char * outFile, char * inFile)
         }
         execv(args[0], args);
     }
-}
-
-void sigint_handler(int sig)
-{
-    printf("sigint handler: a process was interrupted\n");
-    exit(0);
-}
-
-void sigchld_handler(int sig)
-{
-	printf("sigchild handler: a child process was terminated\n");
 }
 
 int main()
