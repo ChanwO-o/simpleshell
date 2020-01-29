@@ -18,6 +18,10 @@ void parsecmd(char * buf)
     char * uinput;
     char * args[MAXARGS]; 
     unsigned int argc;
+    char ofname[50];
+    char ifname[50];
+    char * outFile = NULL;
+    char * inFile = NULL;
 
     uinput = strtok(buf, " ");
 
@@ -50,16 +54,26 @@ void parsecmd(char * buf)
         if (newline != NULL) *newline = '\0';
 
         if (strcmp(uinput, ">") == 0)
-        {
+        {   
             uinput = strtok(NULL, " ");
+            char * newline = strchr(uinput, '\n'); // remove newline char
+            if (newline != NULL) *newline = '\0';
+            strcpy(ofname, uinput);
+            outFile = ofname;
+
             printf("OUTPUT REDIRECTION\n");
-            printf("%s\n", uinput);
+            printf("%s\n", ofname);
         }
         else if (strcmp(uinput, "<") == 0)
         {
             uinput = strtok(NULL, " ");
+            char * newline = strchr(uinput, '\n'); // remove newline char
+            if (newline != NULL) *newline = '\0';
+            strcpy(ifname, uinput);
+            inFile = ifname;
+
             printf("INPUT REDIRECTION\n");
-            printf("%s\n", uinput);
+            printf("%s\n", ifname);
         }
         else if (strcmp(uinput, "&") == 0)
         {
@@ -70,48 +84,58 @@ void parsecmd(char * buf)
         uinput = strtok(NULL, " ");
     }
     args[argc] = NULL;
-    identifyproc(args, argc);
+    identifyproc(args, argc, outFile, inFile);
 }
 
-void outputredir(char * fname)
+void identifyproc(char ** args, int argc, char * outFile, char * inFile)
 {
-    printf("INSIDE OUTPUT REDIRECTION\n");
+    //BACKGROUND PROCESS
+    if (strcmp(args[argc-1], "&") == 0)
+    {
+        args[argc-1] = NULL;
+        background(args, argc, outFile, inFile);
+    }
     
-    FILE * file = fopen(fname, "w");
+    //FOREGROUND PROCESS
+    else
+    {
+        foreground(args, argc, outFile, inFile);
+    }
+}
+
+void outputredir(char * outFile)
+{
+    FILE * file = fopen(outFile, "w");
     int fd = fileno(file);
     close(1);
     dup(fd);
     close(fd);
 }
 
-void inputredir(char * fname)
+void inputredir(char * inFile)
 {
-
+    FILE * file = fopen(inFile, "r");
+    int fd = fileno(file);
+    close(0);
+    dup(fd);
+    close(fd);
 }
 
-void identifyproc(char ** args, int argc)
-{
-    //BACKGROUND PROCESS
-    if (strcmp(args[argc-1], "&") == 0)
-    {
-        args[argc-1] = NULL;
-        background(args, argc);
-    }
-    
-    //FOREGROUND PROCESS
-    else
-    {
-        foreground(args, argc);
-    }
-}
-
-void foreground(char ** args, int argc)
+void foreground(char ** args, int argc, char * outFile, char * inFile)
 {
     int pid = fork();
 
     //CHILD PROCESS
     if (pid == 0) 
     {
+        if (outFile != NULL)
+        {
+            outputredir(outFile);               
+        }
+        if (inFile != NULL)
+        {
+            inputredir(inFile);
+        }
         execv(args[0], args);
     }
     wait(NULL);
@@ -128,7 +152,7 @@ void sigchld_handler(int sig)
 	printf("sigchild handler: a child process was terminated\n");
 }
 
-void background(char ** args, int argc)
+void background(char ** args, int argc, char * outFile, char * inFile)
 {
     int pid = fork();
 
