@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h> 
 #include <signal.h>
+#include <stdlib.h>
 
 #define MAXARGS 11
 #define ARGMAXLEN 10
@@ -21,7 +22,8 @@ void parsecmd(char * buf)
     uinput = strtok(buf, " ");
 
     argc = 0;
-    while (uinput != NULL && argc < MAXARGS && strcmp(uinput, "\n") != 0)
+    while (uinput != NULL && argc < MAXARGS && strcmp(uinput, "\n") != 0 &&  
+            strcmp(uinput, ">") != 0 && strcmp(uinput, "<") != 0)
     {
         char * newline = strchr(uinput, '\n'); // remove newline char
         if (newline != NULL) *newline = '\0';
@@ -29,22 +31,62 @@ void parsecmd(char * buf)
         if (argc == 0)
         {
             int blen = strlen("/bin/");
-            args[argc] = malloc((strlen(uinput)+blen) * sizeof(char));
+            args[argc] = malloc((strlen(uinput)+blen)*sizeof(char));
             strcpy(args[argc], "/bin/");
             strcpy(args[argc]+blen, uinput);
         }
         else 
         {
-            args[argc] = malloc(strlen(uinput) * sizeof(char));
+            args[argc] = malloc(strlen(uinput)*sizeof(char));
             strcpy(args[argc], uinput);
         }
-        ++argc;
         uinput = strtok(NULL, " ");
+        ++argc;
+    }
+       
+    while (uinput != NULL)
+    {
+        char * newline = strchr(uinput, '\n'); // remove newline char
+        if (newline != NULL) *newline = '\0';
 
+        if (strcmp(uinput, ">") == 0)
+        {
+            uinput = strtok(NULL, " ");
+            printf("OUTPUT REDIRECTION\n");
+            printf("%s\n", uinput);
+        }
+        else if (strcmp(uinput, "<") == 0)
+        {
+            uinput = strtok(NULL, " ");
+            printf("INPUT REDIRECTION\n");
+            printf("%s\n", uinput);
+        }
+        else if (strcmp(uinput, "&") == 0)
+        {
+            args[argc] = malloc(strlen(uinput)*sizeof(char));
+            strcpy(args[argc], uinput);
+            ++argc;                 
+        }
+        uinput = strtok(NULL, " ");
     }
     args[argc] = NULL;
-
     identifyproc(args, argc);
+}
+
+void outputredir(char * fname)
+{
+    printf("INSIDE OUTPUT REDIRECTION\n");
+    
+    FILE * file = fopen(fname, "w");
+    int fd = fileno(file);
+    close(1);
+    dup(fd);
+    close(fd);
+}
+
+void inputredir(char * fname)
+{
+
 }
 
 void identifyproc(char ** args, int argc)
@@ -84,7 +126,6 @@ void sigint_handler(int sig)
 void sigchld_handler(int sig)
 {
 	printf("sigchild handler: a child process was terminated\n");
-	
 }
 
 void background(char ** args, int argc)
