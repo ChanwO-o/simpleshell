@@ -1,7 +1,8 @@
 #include <stdio.h>
 
-void main() {
+int main() {
 	printf("sleep start\n");
-	sleep(2);
+	sleep(10);
 	printf("sleep end\n");
+	return 0;
 }
