@@ -123,6 +123,7 @@ void foreground(char ** args, int argc, char * outFile, char * inFile)
             inputredir(inFile);
         }
         execv(args[0], args);
+        exit(0);
     }
     wait(NULL);
 }
@@ -142,11 +143,12 @@ void background(char ** args, int argc, char * outFile, char * inFile)
 {
     int pid = fork();
 
-    signal(SIGINT, sigint_handler);
-	signal(SIGCHLD, sigchld_handler);
     //CHILD PROCESS
     if (pid == 0)
     {
+        signal(SIGINT, sigint_handler);
+	    signal(SIGCHLD, sigchld_handler);
+
         if (outFile != NULL)
         {
             outputredir(outFile);
@@ -156,6 +158,7 @@ void background(char ** args, int argc, char * outFile, char * inFile)
             inputredir(inFile);
         }
         execv(args[0], args);
+        exit(0);
     }
 }
 
@@ -172,7 +175,9 @@ int main()
         { 
             if (strcmp(buf, "quit\n") == 0)
                 break;
-            parsecmd(buf);       
+            
+            else if (buf[0] != '\n')
+                parsecmd(buf);       
         }
     }
     return 0;
