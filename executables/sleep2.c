@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 int main() {
-	printf("sleep start\n");
+	printf("sleep2 start\n");
 	sleep(2);
-	printf("sleep end\n");
+	printf("sleep2 end\n");
 	return 0;
 }
