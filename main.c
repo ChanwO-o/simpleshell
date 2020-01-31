@@ -33,9 +33,9 @@ void parsecmd(char * buf)
             
         if (argc == 0)
         {
-            int blen = strlen("./executables/");
+            int blen = strlen("/bin/");
             args[argc] = malloc((strlen(uinput)+blen)*sizeof(char));
-            strcpy(args[argc], "./executables/");
+            strcpy(args[argc], "/bin/");
             strcpy(args[argc]+blen, uinput);
         }
         else
@@ -141,7 +141,7 @@ void addbackgroundprocess(int pid)
 	{
 		if (bgprocesses[i] == NULL)
 		{
-			printf("addbackgroundprocess(): adding pid %d to bg list at i: %d\n", pid, i);
+			// printf("addbackgroundprocess(): adding pid %d to bg list at i: %d\n", pid, i);
 			bgprocesses[i] = pid;
 			bgprocesses_count++;
 			break;
@@ -156,7 +156,7 @@ void removebackgroundprocess(pid_t* pid)
 	{
 		if (bgprocesses[i] == pid)
 		{
-			printf("removebackgroundprocess(): removing pid %d from bg list at i: %d\n", pid, i);
+			// printf("removebackgroundprocess(): removing pid %d from bg list at i: %d\n", pid, i);
 			bgprocesses[i] = NULL;
 			bgprocesses_count--;
 			break;
@@ -170,15 +170,25 @@ void sigint_handler(int sig)
     exit(0);
 }
 
+void printarray()
+{
+	int i;
+	for (i = 0; i < 25; ++i) {
+		printf(" i: %d\n", bgprocesses[i]);
+	}
+}
+
 void sigchld_handler(int sig)
 {
+	// printf("SIG CHILD HANDLER CALLED\n");
 	int i, status, terminated;
 	for (i = 0; i < 25; ++i)
 	{
 		terminated = waitpid(bgprocesses[i], &status, WNOHANG); // try waiting for each pid registered; if not hanging, will pass.
+		// printf("terminated: %d\n", terminated);
 		if (terminated != -1)
 		{
-			printf("sigchild handler: SUCCESS! terminated PID: %d\n", terminated);
+			// printf("sigchild handler: REAPing PID: %d\n", terminated);
 			removebackgroundprocess(terminated);
 			break;
 		}
@@ -187,7 +197,7 @@ void sigchld_handler(int sig)
 
 void background(char ** args, int argc, char * outFile, char * inFile)
 {
-	signal(SIGCHLD, sigchld_handler);
+	// signal(SIGCHLD, sigchld_handler);
     int pid = fork();
 
     //CHILD PROCESS
@@ -204,8 +214,11 @@ void background(char ** args, int argc, char * outFile, char * inFile)
         execv(args[0], args);
         exit(0); // exit child processes that reach here (i.e. when bad cmd issued to execv)
     }
-	else
+	else if (pid > 0)
 	{
+		signal(SIGCHLD, sigchld_handler);
+		// printf("PID: %d\n", pid);
+		// signal(SIGCHLD, sigchld_handler);
 		addbackgroundprocess(pid);
 	}
 }
@@ -217,14 +230,16 @@ int main()
     
     while (1)
     {
-        printf("prompt> bg_processes: %d ", bgprocesses_count);
+		// printarray();
+        // printf("prompt> bg_processes: %d ", bgprocesses_count);
+		printf("prompt>");
 
         if (fgets(buf, sizeof(buf), stdin) != NULL)
         { 
             if (strcmp(buf, "quit\n") == 0)
                 break;
             
-            else if (buf[0] != '\n')
+            else if (buf[0] != '\n' && buf[0] != ' ' && buf[0] != '\t')
                 parsecmd(buf);       
         }
     }
