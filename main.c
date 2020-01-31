@@ -1,10 +1,16 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define MAXARGS 11
+#define MAXBGPROCESSES 25
+
+pid_t bgprocesses[MAXBGPROCESSES];
+int bgprocesses_count = 0;
 
 void parsecmd(char * buf)
 {
@@ -27,12 +33,12 @@ void parsecmd(char * buf)
             
         if (argc == 0)
         {
-            int blen = strlen("/bin/");
+            int blen = strlen("./executables/");
             args[argc] = malloc((strlen(uinput)+blen)*sizeof(char));
-            strcpy(args[argc], "/bin/");
+            strcpy(args[argc], "./executables/");
             strcpy(args[argc]+blen, uinput);
         }
-        else 
+        else
         {
             args[argc] = malloc(strlen(uinput)*sizeof(char));
             strcpy(args[argc], uinput);
@@ -46,7 +52,7 @@ void parsecmd(char * buf)
         if (newline != NULL) *newline = '\0';
 
         if (strcmp(uinput, ">") == 0)
-        {   
+        {
             uinput = strtok(NULL, " ");
             char * newline = strchr(uinput, '\n'); // remove newline char
             if (newline != NULL) *newline = '\0';
@@ -65,7 +71,7 @@ void parsecmd(char * buf)
         {
             args[argc] = malloc(strlen(uinput)*sizeof(char));
             strcpy(args[argc], uinput);
-            ++argc;                 
+            ++argc;
         }
         uinput = strtok(NULL, " ");
     }
@@ -128,27 +134,65 @@ void foreground(char ** args, int argc, char * outFile, char * inFile)
     wait(NULL);
 }
 
+void addbackgroundprocess(int pid)
+{
+	int i;
+	for (i = 0; i < 25; ++i) // store pid in first empty slot
+	{
+		if (bgprocesses[i] == NULL)
+		{
+			printf("addbackgroundprocess(): adding pid %d to bg list at i: %d\n", pid, i);
+			bgprocesses[i] = pid;
+			bgprocesses_count++;
+			break;
+		}
+	}
+}
+
+void removebackgroundprocess(pid_t* pid)
+{
+	int i;
+	for (i = 0; i < 25; ++i)
+	{
+		if (bgprocesses[i] == pid)
+		{
+			printf("removebackgroundprocess(): removing pid %d from bg list at i: %d\n", pid, i);
+			bgprocesses[i] = NULL;
+			bgprocesses_count--;
+			break;
+		}
+	}
+}
+
 void sigint_handler(int sig)
 {
-    printf("sigint handler: a process was interrupted\n");
+    printf("sigint handler: a background process was interrupted\n");
     exit(0);
 }
 
 void sigchld_handler(int sig)
 {
-	printf("sigchild handler: a child process was terminated\n");
+	int i, status, terminated;
+	for (i = 0; i < 25; ++i)
+	{
+		terminated = waitpid(bgprocesses[i], &status, WNOHANG); // try waiting for each pid registered; if not hanging, will pass.
+		if (terminated != -1)
+		{
+			printf("sigchild handler: SUCCESS! terminated PID: %d\n", terminated);
+			removebackgroundprocess(terminated);
+			break;
+		}
+	}
 }
 
 void background(char ** args, int argc, char * outFile, char * inFile)
 {
+	signal(SIGCHLD, sigchld_handler);
     int pid = fork();
 
     //CHILD PROCESS
     if (pid == 0)
     {
-        signal(SIGINT, sigint_handler);
-	    signal(SIGCHLD, sigchld_handler);
-
         if (outFile != NULL)
         {
             outputredir(outFile);
@@ -158,8 +202,12 @@ void background(char ** args, int argc, char * outFile, char * inFile)
             inputredir(inFile);
         }
         execv(args[0], args);
-        exit(0);
+        exit(0); // exit child processes that reach here (i.e. when bad cmd issued to execv)
     }
+	else
+	{
+		addbackgroundprocess(pid);
+	}
 }
 
 int main()
@@ -169,7 +217,7 @@ int main()
     
     while (1)
     {
-        printf("prompt>");
+        printf("prompt> bg_processes: %d ", bgprocesses_count);
 
         if (fgets(buf, sizeof(buf), stdin) != NULL)
         { 
